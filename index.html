@@ -108,7 +108,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Mortgage Rate (%)</label>
-                                <input type="number" id="rate" class="input-field" value="7.11" min="0" step="0.1" oninput="calculate()">
+                                <input type="number" id="rate" class="input-field" value="7.11" min="0.1" step="0.1" oninput="calculate()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Property Tax (Yr %)</label>
@@ -134,6 +134,10 @@
                         <div>
                             <label class="block text-sm font-medium mb-1">Closing Costs (%)</label>
                             <input type="number" id="closingCosts" class="input-field" value="3" min="0" step="0.1" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Extra Monthly Investment ($)</label>
+                            <input type="number" id="bMonthInv" class="input-field" value="0" min="0" oninput="calculate()">
                         </div>
                         <div class="pt-2 border-t dark:border-darkBorder">
                             <label class="block text-sm font-medium mb-1 flex justify-between">
@@ -369,6 +373,8 @@
             let bCash = -closingCostSunk, rCash = 0;
             let b401kBal = 0, r401kBal = 0;
             let rPort = initInv;
+            let bMonthInv = parseFloat(document.getElementById('bMonthInv').value) || 0;
+            let bPort = 0;
 
             // Base 401k Limits
             let base401kLimit = status === 'joint' ? 48000 : 24000;
@@ -436,8 +442,8 @@
                 totalRentPaid += curRent;
                 totalInterestPaid += interest;
 
-                // Leftover Cash Tracking
-                let bLeft = bNetM - curExp - bCostM;
+                // Leftover Cash Tracking (subtracts the extra investment)
+                let bLeft = bNetM - curExp - bCostM - bMonthInv;
                 let rLeft = rNetM - curExp - rCostM;
                 bCash += bLeft; rCash += rLeft;
 
@@ -481,24 +487,14 @@
 
                 // Grow Assets
                 rPort = (rPort + mInv) * (1 + apy);
+                bPort = (bPort + bMonthInv) * (1 + apy); // Grow buyer's extra investments
                 b401kBal = (b401kBal + (b401kContrib/12)) * (1 + apy);
                 r401kBal = (r401kBal + (r401kContrib/12)) * (1 + apy);
                 homeVal *= (1 + apprec);
 
-                // Net Worth = Assets + Checking - Loan 
-                let bNW = (homeVal - loan) + bCash + b401kBal;
+                // Net Worth = Assets + Checking - Loan + Taxable Portfolio
+                let bNW = (homeVal - loan) + bCash + b401kBal + bPort;
                 let rNW = rPort + rCash + r401kBal;
-
-                // Dynamic Breakeven/Overtake Logic
-                if (m === 1) {
-                    initialLeader = bNW > rNW ? 'Buyer' : (rNW > bNW ? 'Renter' : 'Tie');
-                } else {
-                    let currentLeader = bNW > rNW ? 'Buyer' : (rNW > bNW ? 'Renter' : 'Tie');
-                    if (window.breakevenIdx === -1 && currentLeader !== 'Tie' && currentLeader !== initialLeader) {
-                        window.breakevenIdx = m - 1;
-                        window.overtaker = currentLeader;
-                    }
-                }
 
                 bNetData.push(bNW); rNetData.push(rNW);
                 bCostData.push(bCostM); rCostData.push(rCostM - mInv);
@@ -509,8 +505,19 @@
                 timelineData.push({
                     bCost: bCostM, rCost: rCostM - mInv,
                     pni, curPTax, curIns, curHoa, curMaint, pmi, curRent, mInv,
-                    bNetM, rNetM, grossM: curIncome/12
+                    bNetM, rNetM, grossM: curIncome/12, bMonthInv
                 });
+            }
+
+            // Find the FINAL crossover point by looping backwards
+            let finalWinner = bNetData[359] > rNetData[359] ? 'Buyer' : 'Renter';
+            for (let i = 358; i >= 0; i--) {
+                let leaderAt_i = bNetData[i] > rNetData[i] ? 'Buyer' : 'Renter';
+                if (leaderAt_i !== finalWinner) {
+                    window.breakevenIdx = i + 1; // The exact index where the final winner took the lead
+                    window.overtaker = finalWinner;
+                    break;
+                }
             }
 
             // --- UPDATE TOTAL NET WORTH ANALYSIS BOX ---
@@ -583,7 +590,7 @@
                                     let v = ctx.raw;
                                     let m = ctx.dataIndex + 1;
                                     let real = v / Math.pow(1 + inf, m/12);
-                                    return `${ctx.dataset.label}: $${v.toLocaleString(undefined,{maximumFractionDigits:0})} (Real: $${real.toLocaleString(undefined,{maximumFractionDigits:0})})`;
+                                    return `${ctx.dataset.label}: $${v.toLocaleString(undefined,{maximumFractionDigits:0})} (Inflation adj.: $${real.toLocaleString(undefined,{maximumFractionDigits:0})})`;
                                 }
                             }
                         }
@@ -618,15 +625,16 @@
                     let bUpFront = dpCost + closingCost;
                     let rUpFront = (parseFloat(document.getElementById('initInv').value) || 0) + (parseFloat(document.getElementById('secDeposit').value) || 0);
 
-                    let bGrossPct = (d.bCost / d.grossM * 100).toFixed(1);
-                    let bNetPct = (d.bCost / d.bNetM * 100).toFixed(1);
+                    let bTotalOut = d.bCost + d.bMonthInv;
+                    let bGrossPct = (bTotalOut / d.grossM * 100).toFixed(1);
+                    let bNetPct = (bTotalOut / d.bNetM * 100).toFixed(1);
                     document.getElementById('buyerMetricsList').innerHTML = `
                         <li class="mb-2 pb-2 border-b border-blue-200 dark:border-blue-800"><span class="font-semibold">Up Front Cost:</span> $${bUpFront.toLocaleString(undefined, {maximumFractionDigits:0})}</li>
-                        <li><span class="font-semibold">Total Monthly Cost:</span> $${d.bCost.toFixed(0)}</li>
-                        <li class="text-xs ml-2 text-gray-500">P&I: $${d.pni.toFixed(0)}</li>
-                        <li class="text-xs ml-2 text-gray-500">Taxes: $${d.curPTax.toFixed(0)} | Ins: $${d.curIns.toFixed(0)} | HOA: $${d.curHoa.toFixed(0)}</li>
-                        <li class="text-xs ml-2 text-gray-500">Maint: $${d.curMaint.toFixed(0)} | PMI: $${d.pmi.toFixed(0)}</li>
-                        <li class="mt-2 text-red-600 dark:text-red-400 font-bold">${bGrossPct}% of Gross Income</li>
+                        <li><span class="font-semibold">Total Monthly Cost:</span> $${bTotalOut.toFixed(0)}</li>
+                        <li class="text-xs ml-2 text-gray-500">P&I: $${d.pni.toFixed(0)} | Taxes: $${d.curPTax.toFixed(0)}</li>
+                        <li class="text-xs ml-2 text-gray-500">Ins: $${d.curIns.toFixed(0)} | HOA: $${d.curHoa.toFixed(0)} | Maint: $${d.curMaint.toFixed(0)}</li>
+                        <li class="text-xs ml-2 text-gray-500 font-semibold text-green-600">Extra Invested: $${d.bMonthInv.toFixed(0)}</li>
+                        <li class="mt-4 text-red-600 dark:text-red-400 font-bold">${bGrossPct}% of Gross Income</li>
                         <li class="text-red-600 dark:text-red-400 font-bold">${bNetPct}% of Take-Home Pay</li>
                     `;
 
