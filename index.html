@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Rent vs. Buy Calculator</title>
+    <title>Nonsenseian's Rent vs. Buy Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -35,10 +35,19 @@
 
     <div class="max-w-7xl mx-auto">
         <!-- Header & Theme Toggle -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-700 dark:text-blue-400">Advanced Rent vs. Buy Calculator</h1>
-            <button id="themeToggle" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-medium shadow transition hover:bg-gray-300 dark:hover:bg-gray-600">
-                ☀️ / 🌙 Mode
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 drop-shadow-sm">
+                Nonsenseian's Rent vs. Buy Calculator
+            </h1>
+            
+            <!-- Animated Toggle Switch -->
+            <button id="themeToggle" class="relative inline-flex h-8 w-16 shrink-0 items-center rounded-full bg-blue-200 dark:bg-gray-700 transition-colors duration-300 focus:outline-none shadow-inner hover:bg-blue-300 dark:hover:bg-gray-600">
+                <!-- Sun Icon -->
+                <span class="absolute left-1.5 text-sm transition-opacity duration-300 dark:opacity-50">☀️</span>
+                <!-- Moon Icon -->
+                <span class="absolute right-1.5 text-sm transition-opacity duration-300 opacity-50 dark:opacity-100">🌙</span>
+                <!-- Sliding Thumb -->
+                <span class="z-10 inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-300 translate-x-1 dark:translate-x-9"></span>
             </button>
         </div>
 
@@ -111,11 +120,11 @@
                                 <input type="number" id="rate" class="input-field" value="7.11" min="0.1" step="0.1" oninput="calculate()">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Property Tax (Yr %)</label>
+                                <label class="block text-sm font-medium mb-1">Property Tax (%/yr)</label>
                                 <input type="number" id="propTax" class="input-field" value="1.2" min="0" step="0.1" oninput="calculate()">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Home Maint. (Yr %)</label>
+                                <label class="block text-sm font-medium mb-1">Home Maint. (%/yr)</label>
                                 <input type="number" id="maint" class="input-field" value="1" min="0" step="0.1" oninput="calculate()">
                             </div>
                             <div>
@@ -128,7 +137,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Appreciation (Yr %)</label>
+                            <label class="block text-sm font-medium mb-1">Appreciation (%/yr)</label>
                             <input type="number" id="apprec" class="input-field" value="4" min="0" step="0.1" oninput="calculate()">
                         </div>
                         <div>
@@ -170,7 +179,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium mb-1">Rent Increase (Yr %)</label>
+                                <label class="block text-sm font-medium mb-1">Rent Increase (%/yr)</label>
                                 <input type="number" id="rentInc" class="input-field" value="4" min="0" step="0.1" oninput="calculate()">
                             </div>
                             <div>
@@ -214,12 +223,28 @@
                     
                     <div class="border-t dark:border-darkBorder pt-4 grid grid-cols-2 gap-4">
                         <div>
+                            <p class="text-xl font-bold mt-1 text-purple-600 dark:text-purple-400 mt-4">Renter:</p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Rent Paid (30 Yrs)</p>
-                            <p class="text-xl font-bold mt-1" id="analysisTotalRent"></p>
+                            <p class="text-xl font-bold mt-1 text-red-500 dark:text-red-400" id="analysisTotalRent"></p>
+                            
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Final Renter Net Worth</p>
+                            <p class="text-xl font-bold mt-1" id="analysisFinalRenterNW"></p>
+
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Total Asset Appreciation</p>
+                            <p class="text-xl font-bold mt-1 text-purple-600 dark:text-purple-400" id="analysisRenterApprec"></p>
                         </div>
                         <div>
+                            <p class="text-xl font-bold mt-1 text-blue-600 dark:text-blue-400 mt-4">Buyer:</p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400">Total Mortgage Interest Paid (30 Yrs)</p>
-                            <p class="text-xl font-bold mt-1" id="analysisTotalInterest"></p>
+                            <p class="text-xl font-bold mt-1 text-red-500 dark:text-red-400" id="analysisTotalInterest"></p>
+                            
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Final Buyer Net Worth</p>
+                            <p class="text-xl font-bold mt-1" id="analysisFinalBuyerNW"></p>
+
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Total Asset Appreciation</p>
+                            <p class="text-xl font-bold mt-1 text-blue-600 dark:text-blue-400" id="analysisBuyerApprec"></p>
                         </div>
                     </div>
                 </div>
@@ -260,7 +285,7 @@
                 <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-xl border dark:border-darkBorder text-xs text-gray-600 dark:text-gray-400 space-y-2">
                     <h3 class="font-bold uppercase tracking-wider text-gray-500">Methodology & Disclosures</h3>
                     <p><strong>Taxes & Income:</strong> Uses simplified standard federal tax brackets and state estimates to calculate take-home pay. 401k limits adhere to $24k (Single) or $48k (Joint) caps, growing annually by the user's inflation rate.</p>
-                    <p><strong>Net Worth Balance Sheet:</strong> Assumes Uninvested "Leftover Cash" is deposited into a 0% checking account. Sunk costs (Rent, Property Tax, Maintenance, Interest, HOA, Insurance, PMI) are deducted from Total Net Worth. Principal payments shift cash to home equity.</p>
+                    <p><strong>Net Worth Balance Sheet:</strong> Assumes Uninvested "Leftover Cash" is deposited into a 0% checking account. Sunk costs (Rent, Property Tax, Maintenance, Interest, HOA, Insurance, PMI at a rate of 0.5% of the home cost) are deducted from Total Net Worth. Principal payments shift cash to home equity.</p>
                     <p><strong>Inflation vs Nominal:</strong> Graphs display nominal values. Tooltip hover states dynamically calculate Real (inflation-adjusted) purchasing power discounting backwards from the month shown.</p>
                 </div>
 
@@ -344,7 +369,7 @@
             let b401kPct = parseFloat(document.getElementById('b401kPct').value) / 100;
 
             let rent = parseFloat(document.getElementById('rent').value) || 0;
-            let rInc = parseFloat(document.getElementById('rentInc').value) / 100 / 12;
+            let rInc = parseFloat(document.getElementById('rentInc').value) / 100;
             let apy = parseFloat(document.getElementById('apy').value) / 100 / 12;
             let initInv = parseFloat(document.getElementById('initInv').value) || 0;
             let mInv = parseFloat(document.getElementById('monthInv').value) || 0;
@@ -359,6 +384,8 @@
             
             let totalRentPaid = 0;
             let totalInterestPaid = 0;
+            let totalRenterPrincipal = initInv;
+            let totalBuyerPrincipal = 0;
 
             // Variables
             let curIncome = income;
@@ -381,15 +408,15 @@
             
             // UI Setup for Month 1 display
             let t = calcTax(curIncome, status, state, 0);
-            document.getElementById('takeHomeReadout').innerText = `Estimated Yr Take-Home: $${(curIncome - t.total).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+            document.getElementById('takeHomeReadout').innerText = `Estimated Annual Take-Home: $${(curIncome - t.total).toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
             for (let m = 1; m <= 360; m++) {
                 let yr = Math.floor((m - 1) / 12);
                 if (m > 1 && m % 12 === 1) {
                     curIncome *= (1 + raise);
                     curExp *= (1 + inflation);
+                    curRent *= (1 + rInc);
                 }
-                curRent *= (1 + rInc);
                 let cap401k = base401kLimit * Math.pow(1 + inflation, yr);
 
                 // 401k Contributions
@@ -438,9 +465,11 @@
                 let bCostM = pni + curPTax + curMaint + curIns + curHoa + pmi;
                 let rCostM = curRent + mInv;
 
-                // Track Cumulative Costs for Analysis Box
+                // Track Cumulative Costs & Principal for Analysis Box
                 totalRentPaid += curRent;
                 totalInterestPaid += interest;
+                totalRenterPrincipal += mInv + (r401kContrib / 12);
+                totalBuyerPrincipal += bMonthInv + (b401kContrib / 12);
 
                 // Leftover Cash Tracking (subtracts the extra investment)
                 let bLeft = bNetM - curExp - bCostM - bMonthInv;
@@ -450,9 +479,10 @@
                 if (m === 1) {
                     let getFunMsg = (cash) => {
                         if (cash < 0) return "💀 Bruh you're gonna be broke asf lmao";
-                        if (cash <= 1000) return "😬 Yikes! That's gonna be a tight budget";
+                        if (cash <= 1000) return "😬 Yikes! That's gonna be a tight budget...";
+                        if (cash <= 2500) return "👍 That's not bad, you got a bit of wiggle room.";
                         if (cash < 5000) return "😌 That's the sweet spot, go ahead and enjoy some guilt free spending.";
-                        return "💰Okay Mr. Moneybags I see you. You're chillin!";
+                        return "💰 Okay Jeff Bezos";
                     };
                     
                     let bFun = getFunMsg(bLeft);
@@ -547,7 +577,21 @@
             document.getElementById('analysisBreakeven').innerText = beText;
             document.getElementById('analysisTotalRent').innerText = `$${totalRentPaid.toLocaleString(undefined, {maximumFractionDigits:0})}`;
             document.getElementById('analysisTotalInterest').innerText = `$${totalInterestPaid.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+            let rNwUI = document.getElementById('analysisFinalRenterNW');
+            rNwUI.innerText = finalRNW >= 0 ? `$${finalRNW.toLocaleString(undefined, {maximumFractionDigits:0})}` : `-$${Math.abs(finalRNW).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+            rNwUI.className = finalRNW >= 0 ? 'text-xl font-bold mt-1 text-green-600 dark:text-green-400' : 'text-xl font-bold mt-1 text-red-600 dark:text-red-400';
 
+            let bNwUI = document.getElementById('analysisFinalBuyerNW');
+            bNwUI.innerText = finalBNW >= 0 ? `$${finalBNW.toLocaleString(undefined, {maximumFractionDigits:0})}` : `-$${Math.abs(finalBNW).toLocaleString(undefined, {maximumFractionDigits:0})}`;
+            bNwUI.className = finalBNW >= 0 ? 'text-xl font-bold mt-1 text-green-600 dark:text-green-400' : 'text-xl font-bold mt-1 text-red-600 dark:text-red-400';
+            
+            // Calculate and inject Appreciation (Total Assets minus Total Principal Inputs)
+            let rApprec = (rPort + r401kBal) - totalRenterPrincipal;
+            document.getElementById('analysisRenterApprec').innerText = `$${rApprec.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+
+            // Buyer appreciation includes the house value minus the original purchase price
+            let bApprec = (homeVal - price) + (bPort + b401kBal) - totalBuyerPrincipal;
+            document.getElementById('analysisBuyerApprec').innerText = `$${bApprec.toLocaleString(undefined, {maximumFractionDigits:0})}`;
 
             drawCharts(labels, bNetData, rNetData, bCostData, rCostData, inflation);
             updateTimeline();
@@ -610,7 +654,20 @@
                         { label: 'Renter Out-of-Pocket', data: rCost, borderColor: '#A855F7', backgroundColor: '#A855F7', tension: 0.4 }
                     ]
                 },
-                options: commonOptions
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        ...commonOptions.plugins,
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    let v = ctx.raw;
+                                    return `${ctx.dataset.label}: $${v.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
